@@ -3,3 +3,6 @@ workspaces/
 .git/
 .env
 *.log
+openspec/
+scripts/
+evidence/
