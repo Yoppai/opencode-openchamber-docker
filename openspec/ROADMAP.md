@@ -1,9 +1,9 @@
 # Roadmap OpenSpec: Dockerizar OpenCode + OpenChamber
 
-> **Roadmap v0.5** | Última actualización: 2026-05-03  
+> **Roadmap v0.6** | Última actualización: 2026-05-03  
 > Basado en `openspec/PRD.md`.  
 > Cada change debe ser verificable de forma aislada o con sus dependencias completadas.
-> ch-00 archivado.
+> ch-00 archivado. ch-01 archivado.
 
 ---
 
@@ -11,6 +11,7 @@
 
 | Versión | Fecha | Cambio |
 | :--- | :--- | :--- |
+| v0.6 | 2026-05-03 | ch-01 archivado como spike/discovery; delta spec NO sync (validation-only); ROADMAP actualizado |
 | v0.5 | 2026-05-03 | ch-00 archivado; delta spec sync a main specs; ROADMAP actualizado |
 | v0.4 | 2026-05-03 | ch-00 formalizado y activo; registry de specs candidatos creado; trazabilidad PRD→artifacts alineada |
 | v0.3 | 2026-05-03 | Arquitectura de roadmap aplicada: changelog, completados, fases tabulares, notas técnicas, grafo de dependencias, estado de specs, criterios por fase e inventario de gaps críticos |
@@ -42,6 +43,7 @@ Cuando un cambio termina, `openspec archive <change>` debe fusionar sus delta sp
 | ID | Nombre | Spec | Archivado |
 | :--- | :--- | :--- | :--- |
 | `ch-00` | `formalize-docker-roadmap` | `spec-domain-registry` | ✅ `openspec/changes/archive/2026-05-03-formalize-docker-roadmap/` |
+| `ch-01` | `spike-openchamber-npm-runtime` | `runtime-validation` (validation-only, NO sync) | ✅ `openspec/changes/archive/2026-05-03-spike-openchamber-npm-runtime/` |
 
 ---
 
@@ -128,13 +130,13 @@ MVP significa:
 
 | ID del Cambio | Nombre de la Tarea | Estado | Dependencias | Spec | Referencia al PRD |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| `ch-01` | `spike-openchamber-npm-runtime`: validar binario `openchamber`, `serve`, `--ui-password` y riesgos ARM | ⏳ Pending | `ch-00` | ❌ Pendiente | §101-133 OpenChamber, §482-496 Riesgos |
+| `ch-01` | `spike-openchamber-npm-runtime`: validar binario `openchamber`, `serve`, `--ui-password` y riesgos ARM | ✅ Archivado (NO-GO ch-02: opencode missing) | `ch-00` | 🟢 Validation-only (NO sync) | §101-133 OpenChamber, §482-496 Riesgos |
 | `ch-02` | `build-container-image`: imagen local con Node 22 Debian/glibc, OpenCode, OpenChamber, Bun, gh, git, SSH, tini y usuario no-root | ⏳ Pending | `ch-01` | ❌ Pendiente (`container-image`, `runtime-config`) | §43-68 Stack e Imagen, §69-100 Orden de instalación |
 | `ch-03` | `add-runtime-entrypoint`: entrypoint con password, warning sin password y seed/merge de `opencode-synced` | ⏳ Pending | `ch-02` | ❌ Pendiente (`runtime-config`, `sync-config`) | §124-130 UI password, §167-208 OpenCode/opencode-synced, §240-246 Acceso |
 
 **Notas técnicas Fase 1:**
-- `ch-01`: debe ejecutarse temprano porque rompe todo si el paquete npm no publica binario o flags esperados.
-- `ch-02`: debe evitar Alpine/musl por riesgo con `better-sqlite3`, `node-pty`, `bun-pty`.
+- `ch-01`: ✅ Archivado. Hallazgo crítico: `openchamber serve` requiere `opencode` CLI en PATH. Todos los flags CLI confirmados. Prebuilds AMD64/ARM64 OK. NO-GO para ch-02 hasta resolver dependencia.
+- `ch-02`: debe instalar `opencode` CLI o configurar `OPENCODE_BINARY`. Evitar Alpine/musl por riesgo con `better-sqlite3`, `node-pty`, `bun-pty`.
 - `ch-03`: seed/merge debe preservar config existente y evitar duplicar `opencode-synced`.
 - `OPENCHAMBER_VERSION` y `OPENCODE_VERSION` son build args, no runtime vars.
 
@@ -235,6 +237,7 @@ Sin ch-01, se puede construir infraestructura alrededor de flags/binarios falsos
 | :--- | :--- | :--- |
 | `container-image` | `ch-02`, `ch-06` | 🟡 Registrado |
 | `runtime-config` | `ch-02`, `ch-03`, `ch-04` | 🟡 Registrado |
+| `runtime-validation` | `ch-01` | 🔵 Validation-only (NO sync: spike, failed scenarios) |
 | `persistence` | `ch-04` | 🟡 Registrado |
 | `sync-config` | `ch-03`, `ch-05`, `ch-07` | 🟡 Registrado |
 | `ghcr-publishing` | `ch-06`, `ch-07` | 🟡 Registrado |
@@ -251,8 +254,8 @@ Sin ch-01, se puede construir infraestructura alrededor de flags/binarios falsos
 
 ### Fase 1
 
-- [ ] `ch-01`: **DADO** paquete `@openchamber/web`, **CUANDO** se instala desde npm, **ENTONCES** el binario `openchamber` existe y `openchamber serve --foreground --host --port` arranca.
-- [ ] `ch-01`: **DADO** OpenChamber instalado, **CUANDO** se valida password UI, **ENTONCES** `--ui-password` funciona o se documenta alternativa upstream compatible.
+- [x] `ch-01`: **DADO** paquete `@openchamber/web`, **CUANDO** se instala desde npm, **ENTONCES** el binario `openchamber` existe y `openchamber serve` falla sin `opencode` CLI (spike descubrió blocker crítico).
+- [x] `ch-01`: **DADO** OpenChamber instalado, **CUANDO** se valida password UI, **ENTONCES** se documenta que `--ui-password` y `OPENCHAMBER_UI_PASSWORD` son parseados pero no verificables sin `opencode`.
 - [ ] `ch-02`: **DADO** Dockerfile de imagen, **CUANDO** se construye localmente, **ENTONCES** `opencode`, `openchamber`, `bun`, `gh`, `git`, `ssh` y `tini` están disponibles.
 - [ ] `ch-02`: **DADO** contenedor iniciado, **CUANDO** se inspecciona proceso/runtime, **ENTONCES** corre con usuario `openchamber` no-root UID/GID 1000.
 - [ ] `ch-03`: **DADO** `UI_PASSWORD` configurado, **CUANDO** arranca el contenedor, **ENTONCES** OpenChamber recibe password UI.
