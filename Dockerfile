@@ -22,6 +22,7 @@ RUN apt-get update && \
         curl \
         git \
         gh \
+        jq \
         openssh-client \
         tini \
         unzip \
@@ -56,8 +57,13 @@ ENV OPENCODE_BINARY=/usr/local/bin/opencode
 
 # 1.7 (cont): WORKDIR + USER
 WORKDIR /home/openchamber
+
+# 1.8: Copy entrypoint script before switching user
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
 USER openchamber
 
-# 1.9: tini entrypoint + default bash
-ENTRYPOINT ["tini", "--"]
-CMD ["bash"]
+# 1.9: tini entrypoint + entrypoint script
+ENTRYPOINT ["tini", "--", "/usr/local/bin/entrypoint.sh"]
+CMD []
