@@ -1,27 +1,27 @@
-# runtime-config Specification
+# Delta for runtime-config
 
-## Purpose
-Define comportamiento observable del entorno runtime dentro del contenedor.
+## MODIFIED Requirements
 
-## Requirements
+### Requirement: Entorno limpio sin responsabilidades de ch-03
 
-### Requirement: Usuario no-root
-El contenedor MUST ejecutar procesos principales con usuario `openchamber` de UID/GID 1000.
+El runtime de ch-02 MUST NOT incluir lógica de entrypoint para mapeo de password ni seed/merge de plugin `opencode-synced`.
+(Previously: Este requisito excluía explícitamente lógica de entrypoint porque ch-03 no estaba implementado.)
 
-#### Scenario: Identidad de usuario runtime
+#### Scenario: Ausencia de lógica ch-03 en imagen ch-02
 
-- GIVEN un contenedor corriendo
-- WHEN se consulta el usuario efectivo del proceso
-- THEN es `openchamber` con UID 1000 y GID 1000
+- GIVEN una imagen construida bajo ch-02
+- WHEN se inspecciona el entrypoint o scripts de arranque
+- THEN no existe código que lea `UI_PASSWORD` ni modifique `opencode.json`/`opencode.jsonc`
 
 ### Requirement: Entrypoint como punto de arranque del contenedor
+
 El contenedor MUST ejecutar un entrypoint script al iniciar. Este script MUST leer variables de entorno runtime, preparar la configuración de OpenCode, y lanzar OpenChamber con los flags correctos.
 
 #### Scenario: Entrypoint ejecutado por tini como PID 1
 
 - GIVEN un contenedor iniciado
 - WHEN se inspecciona el proceso con PID 1
-- THEN el PID 1 es `tini`, que ejecuta el entrypoint, el cual mediante `exec` lanza `openchamber` como proceso hijo
+- THEN el PID 1 es `tini` y su hijo directo es el entrypoint script
 
 #### Scenario: UI_PASSWORD presente se mapea a flag
 
@@ -49,11 +49,18 @@ El contenedor MUST ejecutar un entrypoint script al iniciar. Este script MUST le
 - THEN el comando ejecutado es `openchamber serve --foreground --host <OPENCHAMBER_HOST> --port <OPENCHAMBER_PORT>`
 - AND si aplica, incluye `--ui-password "$UI_PASSWORD"`
 
+## ADDED Requirements
+
 ### Requirement: Resolución de directorio de configuración
-El entrypoint MUST resolver `OPENCHAMBER_CONFIG_DIR` con default `~/.config/opencode` para determinar dónde opera el seed/merge de configuración OpenCode (`opencode.json`/`opencode.jsonc`).
+
+El entrypoint MUST resolver `OPENCHAMBER_CONFIG_DIR` con default `~/.config/openchamber` para determinar dónde opera el seed/merge de configuración OpenCode.
 
 #### Scenario: OPENCHAMBER_CONFIG_DIR no definido
 
 - GIVEN `OPENCHAMBER_CONFIG_DIR` no está definido
 - WHEN el entrypoint necesita la ruta de configuración
-- THEN usa `~/.config/opencode` como default
+- THEN usa `~/.config/openchamber` como default
+
+## REMOVED Requirements
+
+Ninguno.
