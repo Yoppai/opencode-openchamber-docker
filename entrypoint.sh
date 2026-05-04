@@ -13,6 +13,14 @@ set -euo pipefail
 # is OpenCode's opencode.json[c]. Aligned with runtime-config spec.
 CONFIG_DIR="${OPENCHAMBER_CONFIG_DIR:-$HOME/.config/opencode}"
 
+# Ensure config parent directory exists and is writable
+mkdir -p "$CONFIG_DIR" 2>/dev/null || true
+if [ ! -w "$CONFIG_DIR" ]; then
+  echo "[entrypoint] ERROR: $CONFIG_DIR no tiene permisos de escritura" >&2
+  echo "[entrypoint] Ejecuta en el host: sudo chown -R 1000:1000 ./data ./workspaces" >&2
+  exit 1
+fi
+
 # Priority: opencode.jsonc > opencode.json > create opencode.jsonc
 if [ -f "$CONFIG_DIR/opencode.jsonc" ]; then
   CONFIG="$CONFIG_DIR/opencode.jsonc"
@@ -47,6 +55,14 @@ else
       exit 1
     fi
   fi
+fi
+
+# --- Defensive permissions (ch-04) ---
+# Ensure SSH directory permissions are correct after volume mount.
+# Docker bind mounts may not preserve Unix permissions on all platforms.
+if [ -d "$HOME/.ssh" ]; then
+  chmod 700 "$HOME/.ssh" || echo "[entrypoint] WARNING: no se pudo aplicar chmod 700 a ~/.ssh — revisa permisos en el host" >&2
+  find "$HOME/.ssh" -type f -exec chmod 600 {} \; 2>/dev/null || true
 fi
 
 # --- Password resolution ---
