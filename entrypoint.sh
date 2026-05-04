@@ -4,7 +4,7 @@ set -euo pipefail
 # ============================================================
 # entrypoint.sh — OpenChamber Docker Entrypoint
 # Ensures config directory exists, applies defensive SSH permissions,
-# resolves password, and execs openchamber serve --foreground under tini.
+# resolves password, and execs openchamber (runs in foreground by default).
 # ============================================================
 
 # --- Ensure OpenCode config directory exists ---
@@ -32,12 +32,13 @@ fi
 # Priority: UI_PASSWORD > OPENCHAMBER_UI_PASSWORD > none (warn on stderr)
 UI_PASSWORD="${UI_PASSWORD:-${OPENCHAMBER_UI_PASSWORD:-}}"
 
-HOST="${OPENCHAMBER_HOST:-0.0.0.0}"
+# OpenChamber reads OPENCHAMBER_HOST env var (no --host CLI flag needed)
+export OPENCHAMBER_HOST="${OPENCHAMBER_HOST:-0.0.0.0}"
 PORT="${OPENCHAMBER_PORT:-8080}"
 
 if [ -n "$UI_PASSWORD" ]; then
-  exec openchamber serve --foreground --host "$HOST" --port "$PORT" --ui-password "$UI_PASSWORD"
+  exec openchamber --port "$PORT" --ui-password "$UI_PASSWORD"
 else
   echo "[entrypoint] WARNING: UI_PASSWORD is not set — OpenChamber will start without password protection" >&2
-  exec openchamber serve --foreground --host "$HOST" --port "$PORT"
+  exec openchamber --port "$PORT"
 fi
