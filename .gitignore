@@ -3,3 +3,6 @@ data/
 workspaces/
 .atl/
 *.log
+openspec/
+scripts/
+decisions.md
