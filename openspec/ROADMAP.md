@@ -1,9 +1,9 @@
 # Roadmap OpenSpec: Dockerizar OpenCode + OpenChamber
 
-> **Roadmap v0.7** | Última actualización: 2026-05-03  
+> **Roadmap v0.8** | Última actualización: 2026-05-03  
 > Basado en `openspec/PRD.md`.  
 > Cada change debe ser verificable de forma aislada o con sus dependencias completadas.
-> ch-00 archivado. ch-01 archivado. ch-03 archivado.
+> ch-00 archivado. ch-01 archivado. ch-02 archivado. ch-03 archivado.
 
 ---
 
@@ -11,6 +11,7 @@
 
 | Versión | Fecha | Cambio |
 | :--- | :--- | :--- |
+| v0.8 | 2026-05-03 | ch-02 archivado como build-container-image; delta spec container-image sync; ROADMAP actualizado |
 | v0.7 | 2026-05-03 | ch-03 archivado; delta specs runtime-config + sync-config sync a main specs; ROADMAP actualizado |
 | v0.6 | 2026-05-03 | ch-01 archivado como spike/discovery; delta spec NO sync (validation-only); ROADMAP actualizado |
 | v0.5 | 2026-05-03 | ch-00 archivado; delta spec sync a main specs; ROADMAP actualizado |
@@ -45,6 +46,7 @@ Cuando un cambio termina, `openspec archive <change>` debe fusionar sus delta sp
 | :--- | :--- | :--- | :--- |
 | `ch-00` | `formalize-docker-roadmap` | `spec-domain-registry` | ✅ `openspec/changes/archive/2026-05-03-formalize-docker-roadmap/` |
 | `ch-01` | `spike-openchamber-npm-runtime` | `runtime-validation` (validation-only, NO sync) | ✅ `openspec/changes/archive/2026-05-03-spike-openchamber-npm-runtime/` |
+| `ch-02` | `build-container-image` | `container-image` (delta sync) | ✅ `openspec/changes/archive/2026-05-03-build-container-image/` |
 | `ch-03` | `add-runtime-entrypoint` | `runtime-config` (delta sync), `sync-config` (NEW) | ✅ `openspec/changes/archive/2026-05-03-add-runtime-entrypoint/` |
 
 ---
@@ -133,13 +135,13 @@ MVP significa:
 | ID del Cambio | Nombre de la Tarea | Estado | Dependencias | Spec | Referencia al PRD |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | `ch-01` | `spike-openchamber-npm-runtime`: validar binario `openchamber`, `serve`, `--ui-password` y riesgos ARM | ✅ Archivado (NO-GO ch-02: opencode missing) | `ch-00` | 🟢 Validation-only (NO sync) | §101-133 OpenChamber, §482-496 Riesgos |
-| `ch-02` | `build-container-image`: imagen local con Node 22 Debian/glibc, OpenCode, OpenChamber, Bun, gh, git, SSH, tini y usuario no-root | ⏳ Pending | `ch-01` | ❌ Pendiente (`container-image`, `runtime-config`) | §43-68 Stack e Imagen, §69-100 Orden de instalación |
+| `ch-02` | `build-container-image`: imagen local con Node 22 Debian/glibc, OpenCode, OpenChamber, Bun, gh, git, SSH, tini y usuario no-root | ✅ Archivado | `ch-01` | 🟢 Especificado (`container-image`) | §43-68 Stack e Imagen, §69-100 Orden de instalación |
 | `ch-03` | `add-runtime-entrypoint`: entrypoint con password, warning sin password y seed/merge de `opencode-synced` | ✅ Archivado | `ch-02` | 🟢 Especificado (`runtime-config`, `sync-config`) | §124-130 UI password, §167-208 OpenCode/opencode-synced, §240-246 Acceso |
 
 **Notas técnicas Fase 1:**
-- `ch-01`: ✅ Archivado. Hallazgo crítico: `openchamber serve` requiere `opencode` CLI en PATH. Todos los flags CLI confirmados. Prebuilds AMD64/ARM64 OK. NO-GO para ch-02 hasta resolver dependencia.
-- `ch-02`: debe instalar `opencode` CLI o configurar `OPENCODE_BINARY`. Evitar Alpine/musl por riesgo con `better-sqlite3`, `node-pty`, `bun-pty`.
-- `ch-03`: seed/merge debe preservar config existente y evitar duplicar `opencode-synced`.
+- `ch-01`: ✅ Archivado. Hallazgo crítico: `openchamber serve` requiere `opencode` CLI en PATH. Todos los flags CLI confirmados. Prebuilds AMD64/ARM64 OK.
+- `ch-02`: ✅ Archivado. Imagen single-stage `node:22-bookworm-slim`. Tradeoff ~50-100MB extra vs multi-stage, evita breakage de módulos nativos. TARGETARCH para Bun. Usuario no-root `openchamber` UID/GID 1000.
+- `ch-03`: ✅ Archivado. seed/merge preserva config existente, evita duplicar `opencode-synced`.
 - `OPENCHAMBER_VERSION` y `OPENCODE_VERSION` son build args, no runtime vars.
 
 ---
@@ -237,7 +239,7 @@ Sin ch-01, se puede construir infraestructura alrededor de flags/binarios falsos
 
 | Spec | Change Relacionado | Estado |
 | :--- | :--- | :--- |
-| `container-image` | `ch-02`, `ch-06` | 🟡 Registrado |
+| `container-image` | `ch-02`, `ch-06` | 🟢 Especificado |
 | `runtime-config` | `ch-02`, `ch-03`, `ch-04` | 🟢 Especificado |
 | `runtime-validation` | `ch-01` | 🔵 Validation-only (NO sync: spike, failed scenarios) |
 | `persistence` | `ch-04` | 🟡 Registrado |
@@ -258,8 +260,8 @@ Sin ch-01, se puede construir infraestructura alrededor de flags/binarios falsos
 
 - [x] `ch-01`: **DADO** paquete `@openchamber/web`, **CUANDO** se instala desde npm, **ENTONCES** el binario `openchamber` existe y `openchamber serve` falla sin `opencode` CLI (spike descubrió blocker crítico).
 - [x] `ch-01`: **DADO** OpenChamber instalado, **CUANDO** se valida password UI, **ENTONCES** se documenta que `--ui-password` y `OPENCHAMBER_UI_PASSWORD` son parseados pero no verificables sin `opencode`.
-- [ ] `ch-02`: **DADO** Dockerfile de imagen, **CUANDO** se construye localmente, **ENTONCES** `opencode`, `openchamber`, `bun`, `gh`, `git`, `ssh` y `tini` están disponibles.
-- [ ] `ch-02`: **DADO** contenedor iniciado, **CUANDO** se inspecciona proceso/runtime, **ENTONCES** corre con usuario `openchamber` no-root UID/GID 1000.
+- [x] `ch-02`: **DADO** Dockerfile de imagen, **CUANDO** se construye localmente, **ENTONCES** `opencode`, `openchamber`, `bun`, `gh`, `git`, `ssh` y `tini` están disponibles.
+- [x] `ch-02`: **DADO** contenedor iniciado, **CUANDO** se inspecciona proceso/runtime, **ENTONCES** corre con usuario `openchamber` no-root UID/GID 1000.
 - [x] `ch-03`: **DADO** `UI_PASSWORD` configurado, **CUANDO** arranca el contenedor, **ENTONCES** OpenChamber recibe password UI.
 - [x] `ch-03`: **DADO** `UI_PASSWORD` vacío, **CUANDO** arranca el contenedor, **ENTONCES** logs muestran warning visible y el proceso continúa.
 - [x] `ch-03`: **DADO** config OpenCode existente, **CUANDO** corre seed/merge, **ENTONCES** `opencode-synced` aparece una sola vez en `plugin[]` sin borrar otros campos.
@@ -291,9 +293,9 @@ Sin ch-01, se puede construir infraestructura alrededor de flags/binarios falsos
 | :--- | :--- | :--- | :--- |
 | 1 | ~~**ch-00 ya está activo, pero no archivado**~~ | ~~Roadmap aún no tiene spec archivada; sólo registry y trazabilidad~~ | 🟢 Resuelto: ch-00 archivado |
 | 2 | **No hay behavior specs escritos** | Acceptance criteria aún no son source of truth verificable | `ch-00`, todos |
-| 3 | **`@openchamber/web` runtime no validado** | Se puede construir imagen/CI sobre binario o flags incorrectos | `ch-01` |
-| 4 | **Multi-arch ARM no probado** | Riesgo alto por deps nativas (`better-sqlite3`, `node-pty`, `bun-pty`) | `ch-01`, `ch-06` |
-| 5 | **Seed/merge JSONC no diseñado formalmente** | Riesgo de borrar config de usuario o duplicar plugin | `ch-03` |
+| 3 | ~~**`@openchamber/web` runtime no validado**~~ | ~~Se puede construir imagen/CI sobre binario o flags incorrectos~~ | 🟢 Resuelto: ch-01 archivado |
+| 4 | **Multi-arch ARM no probado a nivel CI** | ch-02 soporta TARGETARCH para Bun; falta build multi-arch automatizado en CI | `ch-06` |
+| 5 | ~~**Seed/merge JSONC no diseñado formalmente**~~ | ~~Riesgo de borrar config de usuario o duplicar plugin~~ | 🟢 Resuelto: ch-03 archivado |
 | 6 | **Secrets/sessions podrían confundirse con sync config** | Riesgo de filtración o conflictos Git | `ch-05`, `ch-07` |
 | 7 | **GHCR owner/tag policy no fijada en repo** | Publicación puede quedar inconsistente | `ch-06` |
 
@@ -329,21 +331,15 @@ Sin ch-01, se puede construir infraestructura alrededor de flags/binarios falsos
 
 ## Próximo paso sugerido
 
-ch-03 archivado. Siguiente change en orden recomendado:
+ch-02, ch-03 archivados. Siguiente change en orden recomendado:
 
 ```txt
 ch-04 add-compose-persistence
 ```
 
-Flujo:
-
-```txt
-/opsx:propose spike-openchamber-npm-runtime
-```
-
 O paso a paso:
 
 ```txt
-/opsx:new spike-openchamber-npm-runtime
+/opsx:new add-compose-persistence
 /opsx:continue
 ```
