@@ -17,3 +17,10 @@ updates:
     labels:
       - "dependencies"
     open-pull-requests-limit: 5
+    ignore:
+      # Node impar = non-LTS (23, 25, 27...). Solo LTS pares.
+      - dependency-name: "node"
+        versions: ["23", "25", "27"]
+      # Evitar bumps automáticos de major (22→24, 24→26). Revisar manual.
+      - dependency-name: "node"
+        update-types: ["version-update:semver-major"]
