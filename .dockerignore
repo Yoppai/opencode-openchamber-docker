@@ -1,6 +1,7 @@
 data/
 workspaces/
 .git/
+.github/
 .env
 *.log
 openspec/

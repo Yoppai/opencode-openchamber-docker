@@ -14,7 +14,8 @@ services:
         # Build args — no son runtime; Dockerfile tiene defaults
         OPENCHAMBER_VERSION: latest
         OPENCODE_VERSION: latest
-    # image: ghcr.io/<owner>/opencode-openchamber:latest  # ch-06: usar imagen GHCR publicada
+    image: ghcr.io/yoppai/opencode-openchamber:latest  # ch-06: imagen GHCR publicada (owner lowercase requerido por Docker)
+    # build: block permanece como fallback para desarrollo local
     container_name: openchamber
     restart: unless-stopped
     user: "1000:1000"

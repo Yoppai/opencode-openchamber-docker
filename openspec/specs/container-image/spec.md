@@ -6,12 +6,18 @@ Define comportamiento observable de la imagen Docker de producción que empaquet
 ## Requirements
 
 ### Requirement: Build arguments para versiones
-La imagen MUST aceptar build args `OPENCODE_VERSION` y `OPENCHAMBER_VERSION`.
+La imagen MUST aceptar build args `OPENCODE_VERSION` y `OPENCHAMBER_VERSION` tanto en builds locales como en builds de CI.
 
 #### Scenario: Build con versiones explicitas
 
 - GIVEN un build de imagen
 - WHEN se pasan `--build-arg OPENCODE_VERSION=1.0.0 --build-arg OPENCHAMBER_VERSION=1.9.10`
+- THEN la imagen resultante contiene esas versiones instaladas
+
+#### Scenario: Build en CI con versiones explicitas
+
+- GIVEN un workflow de CI que ejecuta build de imagen
+- WHEN se pasan build args `OPENCODE_VERSION` y `OPENCHAMBER_VERSION` desde el workflow
 - THEN la imagen resultante contiene esas versiones instaladas
 
 ### Requirement: Binarios disponibles en PATH
@@ -42,3 +48,12 @@ La imagen MUST usar base Debian/glibc compatible. Alpine/musl MUST NOT usarse.
 - WHEN se inspecciona el sistema base
 - THEN reporta glibc como C library
 - AND no reporta musl
+
+### Requirement: CI Reproducibility
+La imagen MUST producir una build funcionalmente equivalente cuando se construye en CI con los mismos build args que en local.
+
+#### Scenario: Build local y CI son equivalentes
+
+- GIVEN un Dockerfile existente
+- WHEN se construye en CI con build args especificos
+- THEN la imagen resultante es funcionalmente equivalente a una build local con los mismos build args
