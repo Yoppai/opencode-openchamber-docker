@@ -1,9 +1,9 @@
 # Roadmap OpenSpec: Dockerizar OpenCode + OpenChamber
 
-> **Roadmap v0.8** | Última actualización: 2026-05-03  
+> **Roadmap v0.9** | Última actualización: 2026-05-03  
 > Basado en `openspec/PRD.md`.  
 > Cada change debe ser verificable de forma aislada o con sus dependencias completadas.
-> ch-00 archivado. ch-01 archivado. ch-02 archivado. ch-03 archivado.
+> ch-00 archivado. ch-01 archivado. ch-02 archivado. ch-03 archivado. ch-04 archivado. simplify-persistence-volumes archivado.
 
 ---
 
@@ -11,6 +11,8 @@
 
 | Versión | Fecha | Cambio |
 | :--- | :--- | :--- |
+| v1.0 | 2026-05-03 | simplify-persistence-volumes archivado; matriz persistencia simplificada 10→2 mounts; ROADMAP actualizado |
+| v0.9 | 2026-05-03 | ch-04 archivado como add-compose-persistence; delta specs persistence (NEW), vps-quickstart (NEW), runtime-config (MERGE); ROADMAP actualizado |
 | v0.8 | 2026-05-03 | ch-02 archivado como build-container-image; delta spec container-image sync; ROADMAP actualizado |
 | v0.7 | 2026-05-03 | ch-03 archivado; delta specs runtime-config + sync-config sync a main specs; ROADMAP actualizado |
 | v0.6 | 2026-05-03 | ch-01 archivado como spike/discovery; delta spec NO sync (validation-only); ROADMAP actualizado |
@@ -48,6 +50,8 @@ Cuando un cambio termina, `openspec archive <change>` debe fusionar sus delta sp
 | `ch-01` | `spike-openchamber-npm-runtime` | `runtime-validation` (validation-only, NO sync) | ✅ `openspec/changes/archive/2026-05-03-spike-openchamber-npm-runtime/` |
 | `ch-02` | `build-container-image` | `container-image` (delta sync) | ✅ `openspec/changes/archive/2026-05-03-build-container-image/` |
 | `ch-03` | `add-runtime-entrypoint` | `runtime-config` (delta sync), `sync-config` (NEW) | ✅ `openspec/changes/archive/2026-05-03-add-runtime-entrypoint/` |
+| `ch-04` | `add-compose-persistence` | `persistence` (NEW), `vps-quickstart` (NEW), `runtime-config` (delta sync) | ✅ `openspec/changes/archive/2026-05-03-add-compose-persistence/` |
+| | `simplify-persistence-volumes` | `persistence` (modified, 10→2 mounts) | ✅ `openspec/changes/archive/2026-05-03-simplify-persistence-volumes/` |
 
 ---
 
@@ -153,11 +157,11 @@ MVP significa:
 
 | ID del Cambio | Nombre de la Tarea | Estado | Dependencias | Spec | Referencia al PRD |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| `ch-04` | `add-compose-persistence`: `docker-compose.yml`, `.env.example`, init dirs y volúmenes persistentes | ⏳ Pending | `ch-03` | ❌ Pendiente (`persistence`, `runtime-config`, `vps-quickstart`) | §288-324 Bootstrap/Persistencia, §325-338 Matriz de volúmenes |
+| `ch-04` | `add-compose-persistence`: `docker-compose.yml`, `.env.example`, init dirs y volúmenes persistentes | ✅ Archivado | `ch-03`, `openspec/changes/archive/2026-05-03-add-compose-persistence/` | 🟢 Especificado (`persistence`, `runtime-config`, `vps-quickstart`) | §288-324 Bootstrap/Persistencia, §325-338 Matriz de volúmenes |
 | `ch-05` | `document-opencode-sync-flow`: docs `/sync-init`, `/sync-link`, secrets, sessions, Turso y diferencia volúmenes vs sync Git | ⏳ Pending | `ch-04` | ❌ Pendiente (`sync-config`, `vps-quickstart`) | §176-239 opencode-synced y stores sensibles, §306-313 Sincronización, §341-349 Seguridad |
 
 **Notas técnicas Fase 2:**
-- `ch-04`: volúmenes deben cubrir OpenChamber, OpenCode config/share/state/cache, agents, gh, ssh, multi-auth y workspaces.
+- `ch-04`: ✅ Archivado. 10 volúmenes host bind mount → simplificado a 2 mounts por `simplify-persistence-volumes`. `data/home` cubre home completo, `workspaces` separado para código.
 - `ch-05`: `opencode-synced` no debe presentarse como backup completo de `$HOME`.
 - `ch-05`: stores multi-auth pueden contener tokens; sólo deben sincronizarse con opt-in explícito y repo privado.
 - Sessions por Git son riesgo de conflicto; Turso debe quedar como recomendación si usuario quiere sesiones multi-máquina activas.
@@ -242,10 +246,10 @@ Sin ch-01, se puede construir infraestructura alrededor de flags/binarios falsos
 | `container-image` | `ch-02`, `ch-06` | 🟢 Especificado |
 | `runtime-config` | `ch-02`, `ch-03`, `ch-04` | 🟢 Especificado |
 | `runtime-validation` | `ch-01` | 🔵 Validation-only (NO sync: spike, failed scenarios) |
-| `persistence` | `ch-04` | 🟡 Registrado |
+| `persistence` | `ch-04`, `simplify-persistence-volumes` | 🟢 Especificado (modificado 10→2 mounts) |
 | `sync-config` | `ch-03`, `ch-05`, `ch-07` | 🟢 Especificado |
 | `ghcr-publishing` | `ch-06`, `ch-07` | 🟡 Registrado |
-| `vps-quickstart` | `ch-04`, `ch-05`, `ch-07` | 🟡 Registrado |
+| `vps-quickstart` | `ch-04`, `ch-05`, `ch-07` | 🟢 Especificado |
 
 ---
 
@@ -268,8 +272,8 @@ Sin ch-01, se puede construir infraestructura alrededor de flags/binarios falsos
 
 ### Fase 2
 
-- [ ] `ch-04`: **DADO** `.env.example`, **CUANDO** usuario lo copia a `.env` y corre init dirs, **ENTONCES** todos los paths persistentes requeridos existen.
-- [ ] `ch-04`: **DADO** `docker compose up -d openchamber`, **CUANDO** el contenedor se recrea, **ENTONCES** config/state/cache/gh/ssh/agents/workspaces persisten.
+- [x] `ch-04`: **DADO** `.env.example`, **CUANDO** usuario lo copia a `.env` y corre init dirs, **ENTONCES** todos los paths persistentes requeridos existen.
+- [x] `ch-04`: **DADO** `docker compose up -d openchamber`, **CUANDO** el contenedor se recrea, **ENTONCES** config/state/cache/gh/ssh/agents/workspaces persisten.
 - [ ] `ch-05`: **DADO** docs de sync, **CUANDO** usuario sigue flujo local `/sync-init` y VPS `/sync-link <repo>`, **ENTONCES** entiende que config/plugins/skills/agents sincronizan pero secrets/sessions no por default.
 - [ ] `ch-05`: **DADO** stores multi-auth sensibles, **CUANDO** docs los mencionan, **ENTONCES** recomiendan persistencia local por volumen y opt-in explícito para sync privado.
 
@@ -331,15 +335,15 @@ Sin ch-01, se puede construir infraestructura alrededor de flags/binarios falsos
 
 ## Próximo paso sugerido
 
-ch-02, ch-03 archivados. Siguiente change en orden recomendado:
+ch-02, ch-03, ch-04, simplify-persistence-volumes archivados. Siguiente change en orden recomendado:
 
 ```txt
-ch-04 add-compose-persistence
+ch-05 document-opencode-sync-flow
 ```
 
 O paso a paso:
 
 ```txt
-/opsx:new add-compose-persistence
+/opsx:new document-opencode-sync-flow
 /opsx:continue
 ```
