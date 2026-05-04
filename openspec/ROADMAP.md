@@ -1,9 +1,9 @@
 # Roadmap OpenSpec: Dockerizar OpenCode + OpenChamber
 
-> **Roadmap v1.1** | Última actualización: 2026-05-03  
+> **Roadmap v1.2** | Última actualización: 2026-05-04  
 > Basado en `openspec/PRD.md`.  
 > Cada change debe ser verificable de forma aislada o con sus dependencias completadas.
-> ch-00 archivado. ch-01 archivado. ch-02 archivado. ch-03 archivado. ch-04 archivado. ch-05 archivado. simplify-persistence-volumes archivado.
+> ch-00 archivado. ch-01 archivado. ch-02 archivado. ch-03 archivado. ch-04 archivado. ch-05 archivado. ch-06 archivado. simplify-persistence-volumes archivado.
 
 ---
 
@@ -11,6 +11,7 @@
 
 | Versión | Fecha | Cambio |
 | :--- | :--- | :--- |
+| v1.2 | 2026-05-04 | ch-06 archivado como publish-ghcr-multiarch; delta specs ghcr-publishing (NEW) + container-image (delta sync) merge a main specs; ROADMAP actualizado |
 | v1.1 | 2026-05-03 | ch-05 archivado como document-opencode-sync-flow; delta specs sync-config (ADD 4 doc requirements) + vps-quickstart (ADD 1 doc requirement) merge a main specs; ROADMAP actualizado |
 | v1.0 | 2026-05-03 | simplify-persistence-volumes archivado; matriz persistencia simplificada 10→2 mounts; ROADMAP actualizado |
 | v0.9 | 2026-05-03 | ch-04 archivado como add-compose-persistence; delta specs persistence (NEW), vps-quickstart (NEW), runtime-config (MERGE); ROADMAP actualizado |
@@ -54,6 +55,7 @@ Cuando un cambio termina, `openspec archive <change>` debe fusionar sus delta sp
 | `ch-04` | `add-compose-persistence` | `persistence` (NEW), `vps-quickstart` (NEW), `runtime-config` (delta sync) | ✅ `openspec/changes/archive/2026-05-03-add-compose-persistence/` |
 | `ch-05` | `document-opencode-sync-flow` | `sync-config` (delta sync: +4 doc requirements), `vps-quickstart` (delta sync: +1 doc requirement) | ✅ `openspec/changes/archive/2026-05-03-document-opencode-sync-flow/` |
 | | `simplify-persistence-volumes` | `persistence` (modified, 10→2 mounts) | ✅ `openspec/changes/archive/2026-05-03-simplify-persistence-volumes/` |
+| `ch-06` | `publish-ghcr-multiarch` | `ghcr-publishing` (NEW), `container-image` (delta sync) | ✅ `openspec/changes/archive/2026-05-04-publish-ghcr-multiarch/` |
 
 ---
 
@@ -178,7 +180,7 @@ MVP significa:
 
 | ID del Cambio | Nombre de la Tarea | Estado | Dependencias | Spec | Referencia al PRD |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| `ch-06` | `publish-ghcr-multiarch`: GitHub Actions, Buildx, QEMU, GHCR, tags mínimos, workflow dispatch y manifest inspect | ⏳ Pending | `ch-02` (`ch-03` recomendado antes de release) | ❌ Pendiente (`ghcr-publishing`, `container-image`) | §361-390 CI/CD esperado, §392-423 Política de actualización y pins |
+| `ch-06` | `publish-ghcr-multiarch`: GitHub Actions, Buildx, QEMU, GHCR, tags mínimos, workflow dispatch y manifest inspect | ✅ Archivado | `ch-02` (`ch-03` recomendado antes de release) | 🟢 Especificado (`ghcr-publishing`, `container-image`) | §361-390 CI/CD esperado, §392-423 Política de actualización y pins |
 
 **Notas técnicas Fase 3:**
 - `ch-06` puede avanzar después de `ch-02`, pero no debe considerarse releaseable hasta que `ch-03` esté estable.
@@ -251,7 +253,7 @@ Sin ch-01, se puede construir infraestructura alrededor de flags/binarios falsos
 | `runtime-validation` | `ch-01` | 🔵 Validation-only (NO sync: spike, failed scenarios) |
 | `persistence` | `ch-04`, `simplify-persistence-volumes` | 🟢 Especificado (modificado 10→2 mounts) |
 | `sync-config` | `ch-03`, `ch-05`, `ch-07` | 🟢 Especificado (+4 doc requirements merged ch-05) |
-| `ghcr-publishing` | `ch-06`, `ch-07` | 🟡 Registrado |
+| `ghcr-publishing` | `ch-06`, `ch-07` | 🟢 Especificado |
 | `vps-quickstart` | `ch-04`, `ch-05`, `ch-07` | 🟢 Especificado (+1 doc requirement merged ch-05) |
 
 ---
@@ -282,9 +284,9 @@ Sin ch-01, se puede construir infraestructura alrededor de flags/binarios falsos
 
 ### Fase 3
 
-- [ ] `ch-06`: **DADO** push a `main` o `workflow_dispatch`, **CUANDO** CI corre, **ENTONCES** publica `ghcr.io/<owner>/opencode-openchamber`.
-- [ ] `ch-06`: **DADO** imagen publicada, **CUANDO** se inspecciona manifest, **ENTONCES** contiene `linux/amd64` y `linux/arm64`.
-- [ ] `ch-06`: **DADO** versión exacta de OpenChamber/OpenCode, **CUANDO** se publica imagen pinned, **ENTONCES** existe tag `openchamber-<version>-opencode-<version>`.
+- [x] `ch-06`: **DADO** push a `main` o `workflow_dispatch`, **CUANDO** CI corre, **ENTONCES** publica `ghcr.io/<owner>/opencode-openchamber`.
+- [x] `ch-06`: **DADO** imagen publicada, **CUANDO** se inspecciona manifest, **ENTONCES** contiene `linux/amd64` y `linux/arm64`.
+- [x] `ch-06`: **DADO** versión exacta de OpenChamber/OpenCode, **CUANDO** se publica imagen pinned, **ENTONCES** existe tag `openchamber-<version>-opencode-<version>`.
 
 ### Fase 4
 
@@ -301,10 +303,10 @@ Sin ch-01, se puede construir infraestructura alrededor de flags/binarios falsos
 | 1 | ~~**ch-00 ya está activo, pero no archivado**~~ | ~~Roadmap aún no tiene spec archivada; sólo registry y trazabilidad~~ | 🟢 Resuelto: ch-00 archivado |
 | 2 | **No hay behavior specs escritos** | Acceptance criteria aún no son source of truth verificable | `ch-00`, todos |
 | 3 | ~~**`@openchamber/web` runtime no validado**~~ | ~~Se puede construir imagen/CI sobre binario o flags incorrectos~~ | 🟢 Resuelto: ch-01 archivado |
-| 4 | **Multi-arch ARM no probado a nivel CI** | ch-02 soporta TARGETARCH para Bun; falta build multi-arch automatizado en CI | `ch-06` |
+| 4 | **Multi-arch ARM no probado a nivel CI** | ch-02 soporta TARGETARCH para Bun; falta build multi-arch automatizado en CI | 🟢 Resuelto: ch-06 archivado |
 | 5 | ~~**Seed/merge JSONC no diseñado formalmente**~~ | ~~Riesgo de borrar config de usuario o duplicar plugin~~ | 🟢 Resuelto: ch-03 archivado |
 | 6 | ~~**Secrets/sessions podrían confundirse con sync config**~~ | ~~Riesgo de filtración o conflictos Git~~ | 🟢 Resuelto: ch-05 docs documentan `includeSecrets`, `includeSessions`, multi-auth stores; `ch-07` refuerza |
-| 7 | **GHCR owner/tag policy no fijada en repo** | Publicación puede quedar inconsistente | `ch-06` |
+| 7 | **GHCR owner/tag policy no fijada en repo** | Publicación puede quedar inconsistente | 🟢 Resuelto: ch-06 archivado |
 
 ---
 
@@ -338,15 +340,15 @@ Sin ch-01, se puede construir infraestructura alrededor de flags/binarios falsos
 
 ## Próximo paso sugerido
 
-ch-02, ch-03, ch-04, ch-05, simplify-persistence-volumes archivados. Siguiente change en orden recomendado:
+ch-02, ch-03, ch-04, ch-05, ch-06, simplify-persistence-volumes archivados. Siguiente change en orden recomendado:
 
 ```txt
-ch-06 publish-ghcr-multiarch
+ch-07 add-production-docs-and-update-policy
 ```
 
 O paso a paso:
 
 ```txt
-/opsx:new publish-ghcr-multiarch
+/opsx:new add-production-docs-and-update-policy
 /opsx:continue
 ```
