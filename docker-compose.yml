@@ -1,0 +1,36 @@
+services:
+  # ============================================================
+  # OpenChamber Docker — Compose v2 (ch-04)
+  #
+  # Prereqs:
+  #   cp .env.example .env
+  #   ./scripts/init-dirs.sh
+  #   docker compose up -d
+  # ============================================================
+  openchamber:
+    build:
+      context: .
+      args:
+        # Build args — no son runtime; Dockerfile tiene defaults
+        OPENCHAMBER_VERSION: latest
+        OPENCODE_VERSION: latest
+    # image: ghcr.io/<owner>/opencode-openchamber:latest  # ch-06: usar imagen GHCR publicada
+    container_name: openchamber
+    restart: unless-stopped
+    user: "1000:1000"
+    ports:
+      - "${OPENCHAMBER_PORT:-3000}:${OPENCHAMBER_PORT:-8080}"
+    env_file: .env
+    volumes:
+      # Persiste todo /home/openchamber: config, cache, state, agents, gh, ssh, plugins
+      - ./data/home:/home/openchamber
+      # Workspaces separado: código fuente, gestión independiente
+      - ./workspaces:/home/openchamber/workspaces
+    healthcheck:
+      # curl sin -f: cualquier HTTP response (200, 401, etc.) = servidor vivo.
+      # Solo connection refused / timeout → unhealthy.
+      test: ["CMD-SHELL", "curl -s http://localhost:${OPENCHAMBER_PORT:-8080}/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
