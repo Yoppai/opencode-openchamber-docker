@@ -18,9 +18,10 @@ updates:
       - "dependencies"
     open-pull-requests-limit: 5
     ignore:
-      # Node impar = non-LTS (23, 25, 27...). Solo LTS pares.
+      # Non-LTS Node (impares: 23, 25, 27...)
       - dependency-name: "node"
         versions: ["23", "25", "27"]
-      # Evitar bumps automáticos de major (22→24, 24→26). Revisar manual.
+      # Evitar bump automático de major en Node (e.g. distro Debian bookworm → trixie)
+      # hasta revisión manual de compatibilidad con better-sqlite3, node-pty, bun-pty
       - dependency-name: "node"
         update-types: ["version-update:semver-major"]
