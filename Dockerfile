@@ -63,12 +63,6 @@ RUN case "${TARGETARCH}" in \
     rm /tmp/gentle-ai.tar.gz && \
     echo "Gentle-AI $(gentle-ai version) installed"
 
-# 1.6c: Default opencode config with opencode-synced plugin
-# Volume mounts may override; entrypoint ensures plugin persists.
-RUN mkdir -p /home/openchamber/.config/opencode && \
-    printf '{\n  "$schema": "https://opencode.ai/config.json",\n  "plugin": ["opencode-synced"]\n}\n' \
-    > /home/openchamber/.config/opencode/opencode.json
-
 # 1.7: Create non-root user (rename existing node:node UID/GID 1000 to openchamber)
 RUN groupmod -n openchamber node && \
     usermod -l openchamber -d /home/openchamber -m node
@@ -84,6 +78,12 @@ COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 USER openchamber
+
+# 1.8b: Default opencode config with opencode-synced plugin
+# Volume mounts may override; entrypoint ensures plugin persists.
+RUN mkdir -p /home/openchamber/.config/opencode && \
+    printf '{\n  "$schema": "https://opencode.ai/config.json",\n  "plugin": ["opencode-synced"]\n}\n' \
+    > /home/openchamber/.config/opencode/opencode.json
 
 # 1.9: tini entrypoint + entrypoint script
 ENTRYPOINT ["tini", "--", "/usr/local/bin/entrypoint.sh"]
