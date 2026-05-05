@@ -116,3 +116,14 @@ jobs:
             exit 1
           fi
           echo "Multi-arch manifest validated successfully."
+
+  deploy-dokploy:
+    needs: build-and-publish
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Dokploy redeploy
+        run: |
+          curl -fsS -X POST "${{ secrets.DOKPLOY_DEPLOY_URL }}" \
+            -H "Content-Type: application/json"
+          echo "Dokploy deploy triggered"
