@@ -6,12 +6,14 @@
 ARG OPENCODE_VERSION=latest
 ARG OPENCHAMBER_VERSION=latest
 ARG GENTLE_AI_VERSION=1.25.6
+ARG ENGRAM_VERSION=1.15.8
 
 FROM node:22-bookworm-slim
 
 ARG OPENCODE_VERSION
 ARG OPENCHAMBER_VERSION
 ARG GENTLE_AI_VERSION
+ARG ENGRAM_VERSION
 
 # TARGETARCH inyectado por Buildx: linux/amd64 → "x64-baseline", linux/arm64 → "aarch64"
 ARG TARGETARCH
@@ -62,6 +64,20 @@ RUN case "${TARGETARCH}" in \
     chmod +x /usr/local/bin/gentle-ai && \
     rm /tmp/gentle-ai.tar.gz && \
     echo "Gentle-AI $(gentle-ai version) installed"
+
+# 1.6c: Engram binary from GitHub Releases (multi-arch)
+# Gentle-AI can configure Engram, but OpenCode MCP needs `engram` on PATH.
+RUN case "${TARGETARCH}" in \
+        amd64|x86_64)   ENGRAM_ARCH="amd64" ;; \
+        arm64|aarch64)  ENGRAM_ARCH="arm64" ;; \
+        *)              echo "Unsupported TARGETARCH: ${TARGETARCH}"; exit 1 ;; \
+    esac && \
+    curl -fsSL "https://github.com/Gentleman-Programming/engram/releases/download/v${ENGRAM_VERSION}/engram_${ENGRAM_VERSION}_linux_${ENGRAM_ARCH}.tar.gz" \
+        -o /tmp/engram.tar.gz && \
+    tar -xzf /tmp/engram.tar.gz -C /usr/local/bin/ engram && \
+    chmod +x /usr/local/bin/engram && \
+    rm /tmp/engram.tar.gz && \
+    echo "Engram $(engram version) installed"
 
 # 1.7: Create non-root user (rename existing node:node UID/GID 1000 to openchamber)
 RUN groupmod -n openchamber node && \
