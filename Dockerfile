@@ -5,11 +5,13 @@
 
 ARG OPENCODE_VERSION=latest
 ARG OPENCHAMBER_VERSION=latest
+ARG GENTLE_AI_VERSION=1.25.6
 
 FROM node:22-bookworm-slim
 
 ARG OPENCODE_VERSION
 ARG OPENCHAMBER_VERSION
+ARG GENTLE_AI_VERSION
 
 # TARGETARCH inyectado por Buildx: linux/amd64 → "x64-baseline", linux/arm64 → "aarch64"
 ARG TARGETARCH
@@ -47,6 +49,25 @@ RUN npm install -g "opencode-ai@${OPENCODE_VERSION}" && \
 # 1.6: OpenChamber global + clean npm cache
 RUN npm install -g "@openchamber/web@${OPENCHAMBER_VERSION}" && \
     npm cache clean --force
+
+# 1.6b: Gentle-AI binary from GitHub Releases (multi-arch)
+RUN case "${TARGETARCH}" in \
+        amd64|x86_64)   GA_ARCH="amd64" ;; \
+        arm64|aarch64)  GA_ARCH="arm64" ;; \
+        *)              echo "Unsupported TARGETARCH: ${TARGETARCH}"; exit 1 ;; \
+    esac && \
+    curl -fsSL "https://github.com/Gentleman-Programming/gentle-ai/releases/download/v${GENTLE_AI_VERSION}/gentle-ai_${GENTLE_AI_VERSION}_linux_${GA_ARCH}.tar.gz" \
+        -o /tmp/gentle-ai.tar.gz && \
+    tar -xzf /tmp/gentle-ai.tar.gz -C /usr/local/bin/ gentle-ai && \
+    chmod +x /usr/local/bin/gentle-ai && \
+    rm /tmp/gentle-ai.tar.gz && \
+    echo "Gentle-AI $(gentle-ai version) installed"
+
+# 1.6c: Default opencode config with opencode-synced plugin
+# Volume mounts may override; entrypoint ensures plugin persists.
+RUN mkdir -p /home/openchamber/.config/opencode && \
+    printf '{\n  "$schema": "https://opencode.ai/config.json",\n  "plugin": ["opencode-synced"]\n}\n' \
+    > /home/openchamber/.config/opencode/opencode.json
 
 # 1.7: Create non-root user (rename existing node:node UID/GID 1000 to openchamber)
 RUN groupmod -n openchamber node && \
