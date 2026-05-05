@@ -28,6 +28,27 @@ if [ -d "$HOME/.ssh" ]; then
   find "$HOME/.ssh" -type f -exec chmod 600 {} \; 2>/dev/null || true
 fi
 
+# --- Ensure opencode-synced plugin is registered ---
+# OpenCode auto-installs plugins listed in opencode.json on first launch.
+# This ensures the plugin is present even when volumes override the default config.
+OC_CFG="${CONFIG_DIR}/opencode.json"
+OC_CFGC="${CONFIG_DIR}/opencode.jsonc"
+if [ -f "$OC_CFGC" ]; then
+  OC_CFG="$OC_CFGC"
+fi
+if [ -f "$OC_CFG" ]; then
+  if ! grep -q '"opencode-synced"' "$OC_CFG" 2>/dev/null; then
+    echo "[entrypoint] Adding opencode-synced plugin to $(basename "$OC_CFG")"
+    jq '.plugin = (["opencode-synced"] + (.plugin // [] | unique))' "$OC_CFG" > "${OC_CFG}.tmp" 2>/dev/null && \
+      mv "${OC_CFG}.tmp" "$OC_CFG" || \
+      echo "[entrypoint] WARNING: Could not auto-add opencode-synced (config may use JSONC). Add manually: \"plugin\": [\"opencode-synced\"]" >&2
+  fi
+else
+  mkdir -p "$CONFIG_DIR"
+  printf '{\n  "$schema": "https://opencode.ai/config.json",\n  "plugin": ["opencode-synced"]\n}\n' > "$OC_CFG"
+  echo "[entrypoint] Created opencode.json with opencode-synced plugin"
+fi
+
 # --- Password resolution ---
 # Priority: UI_PASSWORD > OPENCHAMBER_UI_PASSWORD > none (warn on stderr)
 UI_PASSWORD="${UI_PASSWORD:-${OPENCHAMBER_UI_PASSWORD:-}}"
