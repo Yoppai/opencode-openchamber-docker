@@ -97,7 +97,7 @@ USER openchamber
 
 # 1.8b: Default opencode config with opencode-synced plugin
 # Volume mounts may override; entrypoint ensures plugin persists.
-RUN mkdir -p /home/openchamber/.config/opencode && \
+RUN mkdir -p /home/openchamber/.config/opencode /home/openchamber/workspaces && \
     printf '{\n  "$schema": "https://opencode.ai/config.json",\n  "plugin": ["opencode-synced"]\n}\n' \
     > /home/openchamber/.config/opencode/opencode.json
 

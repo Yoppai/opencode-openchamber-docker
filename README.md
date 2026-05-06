@@ -47,10 +47,10 @@ UI_PASSWORD=tu_contraseña_segura_aqui
 ### 3. Inicializar directorios de volumen
 
 ```bash
-$ mkdir -p data/home workspaces
+$ ./scripts/init-dirs.sh
 ```
 
-Crea los directorios locales para volúmenes Docker (`./data/`, `./workspaces/`).
+Crea los directorios locales para volúmenes Docker (`./data/`, `./workspaces/`), incluido el mountpoint nested `./data/home/workspaces`.
 Si no ejecutas este paso, `docker compose up` falla con `no such file or directory`.
 
 ### 4. Iniciar contenedor
